@@ -12,3 +12,23 @@ The application is built using Angular, Tailwind, DaisyUI and it utilizes the Go
 - Add markers to locations
 - Share locations with others
 - Customize map appearance
+
+### Start the development server
+
+- intall dependencies
+
+```
+npm install
+```
+
+- copy the file `.env.template` and create a `.env` file, add your secrets and build environment variables
+
+```
+npm run set-env
+```
+
+- start the development server
+
+```
+ng serve
+```
