@@ -1,12 +1,12 @@
 <div class="relative w-full mx-auto h-[90dvh] mb-10">
-  <app-loader [loading]="loadingMap()" />
+  <app-loader [loading]="myMapService.loadingMap()" />
 
   <div class="absolute w-full h-full" #mapContainer></div>
 
   <app-coordinate-summary
-    [lat]="coordinates().lat"
-    [lng]="coordinates().lng"
-    [zoomValue]="zoomValue()"
-    (newZoomValue)="onNewZoomValue($event)"
+    [lat]="myMapService.coordinates().lat"
+    [lng]="myMapService.coordinates().lng"
+    [zoomValue]="myMapService.zoomValue()"
+    (newZoomValue)="myMapService.onNewZoomValue($event)"
   />
 </div>
