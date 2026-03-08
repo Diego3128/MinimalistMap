@@ -1,0 +1,23 @@
+<div
+  class="absolute bottom-5 right-5 p-3 flex flex-col gap-4 bg-gray-950 text-white rounded-2xl font-bold sm:min-w-80"
+>
+  <div>
+    <p class="my-2">
+      Zoom: <span class="text-yellow-400">{{ zoomValue() | number: '0.2-2' }}</span>
+    </p>
+    <input
+      #zoom
+      (input)="updateZoomValue(zoom)"
+      [value]="zoomValue()"
+      type="range"
+      min="0"
+      step="1"
+      max="22"
+      class="range"
+    />
+  </div>
+
+  <app-summary-cord-info [info]="{ label: 'Longitude', value: lng() }" />
+
+  <app-summary-cord-info [info]="{ label: 'Latitude', value: lat() }" />
+</div>
