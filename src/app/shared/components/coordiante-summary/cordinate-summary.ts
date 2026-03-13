@@ -6,7 +6,7 @@ import { DecimalPipe } from "@angular/common";
 @Component({
   selector: 'app-coordinate-summary',
   templateUrl: './coordinate-summary.html',
-  imports: [SummaryCordInfo, DecimalPipe]
+  imports: [SummaryCordInfo, DecimalPipe,]
 })
 export class CordinateSummary {
 

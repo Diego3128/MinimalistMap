@@ -5,10 +5,11 @@ import { Map, MapStyle } from '@maptiler/sdk';
 import { CordinateSummary } from '../../shared/components/coordiante-summary/cordinate-summary';
 import { Loader } from "../../shared/components/loader/loader";
 import { MapService } from '../../services/map-service';
+import { Toggle } from '../../shared/components/toggle/toggle';
 
 @Component({
   selector: 'app-fullscreen-map-page',
-  imports: [CordinateSummary, Loader],
+  imports: [CordinateSummary, Loader, Toggle],
   templateUrl: './fullscreen-map-page.html',
 })
 export class FullscreenMapPage implements AfterViewInit, OnDestroy {

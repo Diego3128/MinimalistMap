@@ -1,0 +1,31 @@
+<div class="flex gap-3 items-center justify-between flex-row-reverse">
+  <button
+    (click)="onClick()"
+    class="relative block rounded-lg cursor-pointer text-black h-7 w-10 transition-colors duration-300 overflow-hidden"
+    [ngClass]="{
+      'bg-green-500': isOn(),
+      'bg-red-500': !isOn(),
+    }"
+  >
+    <span
+      class="absolute block top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 transition-transform duration-300"
+      [ngClass]="{
+        '-translate-x-96': isOn(),
+        '-translate-x-1/2': !isOn(),
+      }"
+      >OFF
+    </span>
+
+    <span
+      class="absolute block top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 transition-transform duration-300"
+      [ngClass]="{
+        '-translate-x-1/2': isOn(),
+        'translate-x-96': !isOn(),
+      }"
+      >ON
+    </span>
+  </button>
+  @if (label()) {
+    <p>{{ label() }}</p>
+  }
+</div>

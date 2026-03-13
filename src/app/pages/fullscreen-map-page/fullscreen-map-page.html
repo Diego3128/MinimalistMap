@@ -8,5 +8,12 @@
     [lng]="myMapService.coordinates().lng"
     [zoomValue]="myMapService.zoomValue()"
     (newZoomValue)="myMapService.onNewZoomValue($event)"
-  />
+  >
+    <app-toggle
+      toggle
+      [label]="'Create marker'"
+      [isOn]="myMapService.isCreatingMarker()"
+      (toggle)="myMapService.toggleCreatingMarker()"
+    />
+  </app-coordinate-summary>
 </div>
