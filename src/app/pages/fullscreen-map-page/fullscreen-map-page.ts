@@ -1,4 +1,4 @@
-import { Component, viewChild, ElementRef, OnDestroy, AfterViewInit, inject } from '@angular/core';
+import { Component, viewChild, ElementRef, OnDestroy, AfterViewInit, inject, signal } from '@angular/core';
 
 import { Map, MapStyle } from '@maptiler/sdk';
 
@@ -6,10 +6,12 @@ import { CordinateSummary } from '../../shared/components/coordiante-summary/cor
 import { Loader } from "../../shared/components/loader/loader";
 import { MapService } from '../../services/map-service';
 import { Toggle } from '../../shared/components/toggle/toggle';
+import { MarkerList } from "../../shared/components/marker-list/marker-list";
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-fullscreen-map-page',
-  imports: [CordinateSummary, Loader, Toggle],
+  imports: [CordinateSummary, Loader, Toggle, MarkerList, NgClass],
   templateUrl: './fullscreen-map-page.html',
 })
 export class FullscreenMapPage implements AfterViewInit, OnDestroy {
@@ -18,7 +20,10 @@ export class FullscreenMapPage implements AfterViewInit, OnDestroy {
 
   private mapContainerRef = viewChild<ElementRef<HTMLDivElement>>("mapContainer");
 
+  showMarkerList = signal(false);
+
   ngAfterViewInit(): void {
+    // create new map for the general service
     const initialState = { lng: this.myMapService.coordinates().lng, lat: this.myMapService.coordinates().lat, zoom: this.myMapService.zoomValue() };
 
     this.myMapService.myMap = new Map({
@@ -27,9 +32,19 @@ export class FullscreenMapPage implements AfterViewInit, OnDestroy {
       center: [initialState.lng, initialState.lat],
       zoom: initialState.zoom,
     });
-    //start listening for events
-    this.myMapService.mapListeners();
 
+    //start listening to events
+    this.myMapService.mapListeners();
+  }
+
+  toggleShowMarkerList = () => this.showMarkerList.update((prev) => !prev);
+
+  createNewMarker = (name: string) => {
+    this.myMapService.newMarkerName.set(name);
+  }
+
+  travelToMarker = (markerId: string) => {
+    this.myMapService.goToMarkerPosition(markerId);
   }
 
   ngOnDestroy(): void {

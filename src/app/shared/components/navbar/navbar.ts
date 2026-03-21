@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { routes } from '../../../app.routes';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from "@angular/router";
 import { filter, map } from 'rxjs';
@@ -10,6 +10,8 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
   templateUrl: './navbar.html',
 })
 export class Navbar {
+
+  toggleNavBar = output();
 
   routerService = inject(Router);
 
@@ -28,5 +30,8 @@ export class Navbar {
 
   currentPath = toSignal(this.currentUrl$, { initialValue: '' });
 
+  showNavBar = input.required<boolean>();
+
+  toggleShowNavBar = () => this.toggleNavBar.emit();
 
 }

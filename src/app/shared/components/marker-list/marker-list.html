@@ -1,0 +1,21 @@
+@if (!emptyMarkers()) {
+  <ul class="flex flex-col gap-5">
+    @for (marker of markers(); track marker.id) {
+      <app-marker-item
+        (markerUpdate)="onUpdateMarkerName($event.markerId, $event.newName)"
+        (markerClick)="onMarkerClick($event)"
+        (markerDelete)="onDeleteMarker($event)"
+        [currentCoordinates]="coordinates()"
+        [marker]="marker"
+      />
+    }
+  </ul>
+} @else {
+  <div class="absolute inset-0 p-4">
+    <div
+      class="h-full w-full border-dashed border-2 border-gray-300 rounded-xl flex justify-center items-center"
+    >
+      <p class="skeleton skeleton-text text-lg">No markers created yet!</p>
+    </div>
+  </div>
+}

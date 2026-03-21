@@ -1,19 +1,65 @@
-<div class="relative w-full mx-auto h-[90dvh] mb-10">
+<div class="relative w-full mx-auto h-full">
   <app-loader [loading]="myMapService.loadingMap()" />
 
   <div class="absolute w-full h-full" #mapContainer></div>
 
-  <app-coordinate-summary
-    [lat]="myMapService.coordinates().lat"
-    [lng]="myMapService.coordinates().lng"
-    [zoomValue]="myMapService.zoomValue()"
-    (newZoomValue)="myMapService.onNewZoomValue($event)"
+  <div class="absolute bottom-5 right-5 min-w-sm">
+    <!-- container for options -->
+    <div>
+      <!-- option to add a new marker -->
+      <div
+        [ngClass]="{
+          'translate-y-full opacity-0': !myMapService.isCreatingMarker(),
+          'translate-y-4 opacity-100': myMapService.isCreatingMarker(),
+        }"
+        class="translate-y-full w-full bg-gray-950 text-white px-5 pt-5 pb-14 rounded-t-xl flex flex-col gap-y-3 transition-all duration-500 -z-20"
+      >
+        <label for="newMarker">New marker name</label>
+        <input
+          class="border-2 border-yellow-400 rounded-md p-2 text-lg"
+          id="newMarker"
+          #newMarkerValue
+          (input)="createNewMarker(newMarkerValue.value)"
+          type="text"
+          [value]="myMapService.newMarkerName()"
+        />
+      </div>
+    </div>
+
+    <app-coordinate-summary
+      [lat]="myMapService.coordinates().lat"
+      [lng]="myMapService.coordinates().lng"
+      [zoomValue]="myMapService.zoomValue()"
+      (newZoomValue)="myMapService.onNewZoomValue($event)"
+    >
+      <div toggle class="flex flex-col gap-y-3">
+        <app-toggle
+          [label]="'create marker'"
+          [isOn]="myMapService.isCreatingMarker()"
+          (toggle)="myMapService.toggleCreatingMarker()"
+        />
+
+        <app-toggle
+          [label]="'marker list'"
+          [isOn]="showMarkerList()"
+          (toggle)="toggleShowMarkerList()"
+        />
+      </div>
+    </app-coordinate-summary>
+  </div>
+
+  <!-- list -->
+  <div
+    [ngClass]="{
+      '-translate-x-full': !showMarkerList(),
+      'translate-x-0': showMarkerList(),
+    }"
+    class="-translate-x-full absolute top-20 left-0 w-full sm:max-w-md transition-all duration-300 bg-gray-950 sm:rounded-tr-2xl sm:rounded-br-2xl min-h-60 max-h-60 p-4 overflow-y-auto"
   >
-    <app-toggle
-      toggle
-      [label]="'Create marker'"
-      [isOn]="myMapService.isCreatingMarker()"
-      (toggle)="myMapService.toggleCreatingMarker()"
+    <app-marker-list
+      [markers]="myMapService.markers()"
+      [coordinates]="myMapService.coordinates()"
     />
-  </app-coordinate-summary>
+  </div>
+  <!--  -->
 </div>

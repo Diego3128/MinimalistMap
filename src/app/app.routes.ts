@@ -5,9 +5,9 @@ import { HousesPage } from './pages/houses-page/houses-page';
 
 export const routes: Routes = [
   {
-    path: 'fullscreen',
+    path: 'open-map',
     component: FullscreenMapPage,
-    title: 'full screen map'
+    title: 'Open map'
   },
   {
     path: 'marker',
@@ -15,12 +15,12 @@ export const routes: Routes = [
     title: 'your markers'
   },
   {
-    path: 'houses',
+    path: 'locations',
     component: HousesPage,
-    title: 'available properties'
+    title: 'my maps'
   },
   {
     path: '**',
-    redirectTo: 'fullscreen'
+    redirectTo: 'open-map'
   }
 ];

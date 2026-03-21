@@ -1,9 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
 
+
 /* docs for multiple themes with daisy ui:
 https://daisyui.com/docs/themes/
 */
+
+
 @plugin "daisyui" {
   themes: all;
 }
@@ -21,4 +24,24 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  @apply !border-t-slate-950;
+}
+
+.maplibregl-popup-content {
+  @apply !bg-slate-950 !font-black !p-2 !text-yellow-400;
+}
+
+
+button.maplibregl-popup-close-button {
+  @apply !-right-2.5 !-top-3.5 !size-5.5 !bg-slate-950 !rounded-full !text-[15px] transition-transform duration-300;
+
+}
+
+button.maplibregl-popup-close-button:hover {
+  @apply scale-105 !bg-slate-950;
+
 }

@@ -1,4 +1,19 @@
-<div data-theme="cyberpunk" class="navbar bg-base-100 shadow-sm">
+<div class="relative navbar bg-gray-950/80 shadow-sm transition-all z-30">
+  <!-- button to show/hide navbar -->
+
+  <div class="absolute w-full -bottom-5 left-0 h-5 flex justify-center items-center">
+    <button
+      (click)="toggleShowNavBar()"
+      class="cursor-pointer bg-gray-950 rounded-b-2xl w-24 flex items-center justify-center"
+    >
+      @if (showNavBar()) {
+        <i class="material-icons large text-[40px]!"> keyboard_arrow_up </i>
+      } @else {
+        <i class="material-icons text-[40px]!">keyboard_arrow_down</i>
+      }
+    </button>
+  </div>
+
   <div class="navbar-start">
     <div class="dropdown">
       <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
@@ -35,7 +50,7 @@
     </div>
   </div>
   <div class="navbar-center">
-    <a class="btn btn-ghost text-xl uppercase">{{ currentPath() }}</a>
+    <span class="btn btn-ghost text-xl uppercase">{{ currentPath() }}</span>
   </div>
   <div class="navbar-end">
     <button class="btn btn-ghost btn-circle">

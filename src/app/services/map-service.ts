@@ -1,13 +1,14 @@
 import { effect, Injectable, signal, untracked } from "@angular/core";
 import { environment } from "../../environments/environment";
-import { config, FullscreenControl, Map, MapMouseEvent, MaptilerProjectionControl, Marker, ScaleControl } from "@maptiler/sdk";
+import { config, FullscreenControl, Map, MapMouseEvent, MaptilerProjectionControl, Marker, Popup, ScaleControl } from "@maptiler/sdk";
 import '@maptiler/sdk/style.css';
 
 import { UUID } from "../helpers/uuid";
 import { Color } from "../helpers/color";
 
-type CustomMarker = Marker & {
+export type CustomMarker = Marker & {
   id: string;
+  name: string;
 }
 
 @Injectable({
@@ -36,6 +37,38 @@ export class MapService {
     return coords as { lng: number, lat: number };
   }
 
+  private createCustomPopUp = (label: string, offset?: number): Popup => {
+    const popupHTML = document.createElement("DIV");
+    popupHTML.classList.add("popup-label");
+    popupHTML.innerText = label;
+
+    const popup = new Popup({ offset: 25 })
+      .setDOMContent(popupHTML);
+    return popup;
+  }
+
+  private addMarkerEvents = (marker: CustomMarker) => {
+    marker.on("dragend", (e) => this.updateMarkerPosition(marker, e));
+
+    marker.getElement().addEventListener("mouseenter", (e) => {
+      // console.log({ name: marker.name, e });
+      marker.togglePopup()
+    })
+  }
+
+  private createCustomMarker = (lng: number, lat: number, name: string, id?: string, color?: string): CustomMarker => {
+    const newMarker = new Marker({ color: color ?? Color.getRandomColor(), draggable: true })
+      .setLngLat([lng, lat]) as CustomMarker;
+
+    newMarker.id = id ?? UUID.generateUUID();
+    newMarker.name = name;
+    this.addMarkerEvents(newMarker);
+
+    //todo: popup test
+    const popup = this.createCustomPopUp(name);
+    newMarker.setPopup(popup);
+    return newMarker;
+  }
 
   getStoredMarkers = () => {
     let markers = JSON.parse(localStorage.getItem(this.MARKERS_KEY) || '[]');
@@ -47,13 +80,11 @@ export class MapService {
       const lng = m.lng as number;
       const lat = m.lat as number;
       const id = m.id as string;
+      const name = m.name as string ?? '';
       const color = m.color as string;
 
-      const marker = new Marker({ draggable: true, color: color })
-        .setLngLat({ lat, lng }) as CustomMarker
-      marker.id = id;
-      marker.on("dragend", (e) => this.updateMarkerPosition(marker, e));
-
+      // use createCustomMarker to create marker recovered from localstorage
+      const marker = this.createCustomMarker(lng, lat, name, id, color);
       return marker;
     })
     //the markers are added to the map in the 'load' event
@@ -93,7 +124,7 @@ export class MapService {
       })
       //
       this.myMap.on("click", (e) => {
-        this.addMark(e);
+        this.createNewCustomMarker(e);
       })
       //
       this.myMap.on("load", () => {
@@ -109,17 +140,28 @@ export class MapService {
     }
   }
 
-  addMark = (e: MapMouseEvent) => {
+  newMarkerName = signal("");
+
+  createNewCustomMarker = (e: MapMouseEvent) => {
     if (!this.myMap || !this.isCreatingMarker()) return;
 
+    if (!this.newMarkerName()) {
+      alert("empty name")
+      return;
+    }
+
     const { lng, lat } = e.lngLat;
-    const newMarker = this.createCustomMarker(lng, lat)
-      .addTo(this.myMap!);
+    const newMarker = this.createCustomMarker(lng, lat, this.newMarkerName());
+    newMarker.addTo(this.myMap!);
 
     this.markers.update((prev) => [...prev, newMarker as CustomMarker]);
+
+    this.newMarkerName.set(""); // reset signal that holds name
+    this.isCreatingMarker.set(false); // reset signal that tells if we are creaitng a marker
   }
 
   addMarkersToMap = () => {
+    // takes markers already in the signal markers and adds them to the map
     this.markers().forEach(m => {
       if (this.myMap) m.addTo(this.myMap);
     });
@@ -155,23 +197,11 @@ export class MapService {
   //change the zoom with custom method
   onNewZoomValue = (newZoom: number) => this.zoomValue.set(newZoom);
 
-
-
-  private createCustomMarker = (lng: number, lat: number, id?: string): CustomMarker => {
-    const newMarker = new Marker({ color: Color.getRandomColor(), draggable: true })
-      .setLngLat([lng, lat]) as CustomMarker;
-
-    newMarker.id = id ?? UUID.generateUUID();
-    newMarker.on("dragend", (e) => this.updateMarkerPosition(newMarker, e));
-    return newMarker;
-  }
-
   // handle change of position. update markers signal and localstorage
   updateMarkerPosition = (marker: CustomMarker, event) => {
-    console.log("marker changed position:");
-    console.log({ marker, event });
+    if (!environment.production) console.log("marker changed position:");
+    // console.log({ marker, event });
     const { lng, lat } = event.target.getLngLat();
-    // this.markers.update((marker)=>)
     const updatedMarkers = this.markers().map((m) => {
       if (m.id === marker.id) m.setLngLat({ lng, lat });
       return m;
@@ -179,24 +209,61 @@ export class MapService {
 
     this.markers.set(updatedMarkers);
   }
+
+  goToMarkerPosition = (markerId: string) => {
+    const marker = this.markers().find(m => m.id === markerId);
+    if (!marker || !this.myMap) return;
+    // this.myMap.flyTo({ center: marker.getLngLat() });
+    this.myMap.jumpTo({ center: marker.getLngLat() });
+  }
+
+  deleteMarker = (markerId: string) => {
+    const markers = this.markers();
+    const markerToBeDeleted = markers.find(m => m.id === markerId);
+    if (!markerToBeDeleted || !this.myMap) return;
+
+    markerToBeDeleted.remove();
+    this.markers.update((sMarkers) => sMarkers.filter(m => m.id !== markerId));
+  }
+
+  updateMarkerName = (markerId: string, newName: string) => {
+    console.log("updating marker", newName);
+    const markers = this.markers();
+    const markerToBeUpdated = markers.find(m => m.id === markerId);
+    console.log({ markerToBeUpdated });
+    if (!markerToBeUpdated || !this.myMap) return;
+
+    this.markers.update((prevMarkers => prevMarkers.map((m) => {
+      if (m.id === markerId) m.name = newName;
+      return m;
+    })))
+
+    // todo: sycn with marker popup
+    // marker.getPopup()..
+  }
+
   // sync markers with localstorage
   syncMarkers = effect(() => {
-    console.log("save changes to local storage");
+
+    if (!environment.production) console.log("save marker changes to local storage");
     const markers = this.markers();
 
     const formatedMarkers = markers.map((m) => ({
       id: m.id, // Keep the ID!
+      name: m.name, // Keep the ID!
       lng: m.getLngLat().lng,
       lat: m.getLngLat().lat,
       color: m._color, // Hardcoded or dynamic
       draggable: true
     }));
 
+    console.log({ formatedMarkers });
+
     untracked(() => {
       window.localStorage.setItem(this.MARKERS_KEY, JSON.stringify(formatedMarkers));
     })
   })
 
-  // TODO: remove mark: with marker.remove()!. add event 'click' to marker and delete it if a certain condition is true
+
 
 }

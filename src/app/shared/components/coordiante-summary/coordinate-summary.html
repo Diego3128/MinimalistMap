@@ -1,7 +1,7 @@
 <div
-  class="absolute bottom-5 right-5 p-3 flex flex-col gap-4 bg-gray-950 text-white rounded-2xl font-bold sm:min-w-80"
+  class="relative p-3 flex flex-col gap-4 bg-gray-950 text-white rounded-2xl font-bold w-full z-50"
 >
-  <ng-content [select]="[toggle]" />
+  <ng-content select="[toggle]" />
 
   <div>
     <p class="my-2">
@@ -19,7 +19,19 @@
     />
   </div>
 
-  <app-summary-cord-info [info]="{ label: 'Longitude', value: lng() }" />
+  <div class="bg-base-100 border-base-300 collapse border">
+    <input type="checkbox" class="peer" />
+    <div
+      class="collapse-title bg-black text-primary-content peer-checked:bg-transparent peer-checked:text-secondary-content"
+    >
+      Coordinates
+    </div>
+    <div
+      class="collapse-content text-primary-content peer-checked:bg-transparent peer-checked:text-secondary-content"
+    >
+      <app-summary-cord-info [info]="{ label: 'Longitude', value: lng() }" />
 
-  <app-summary-cord-info [info]="{ label: 'Latitude', value: lat() }" />
+      <app-summary-cord-info [info]="{ label: 'Latitude', value: lat() }" />
+    </div>
+  </div>
 </div>

@@ -1,5 +1,27 @@
-<header>
-  <app-navbar />
-</header>
+<div class="flex flex-col overflow-hidden">
+  <header
+    class="relative translate-y-0 z-10 transition-all duration-500"
+    [ngClass]="{
+      'mt-0': showNavBar(),
+      '-mt-16': !showNavBar(),
+    }"
+    [ariaHidden]="!showNavBar()"
+    [inert]="!showNavBar() ? '' : null"
+  >
+    <!--
+  aria-hidden: screen readers to ignore the entire tree.
+inert: Prevents Tab key from finding any buttons or links inside the header tree.
+-->
+    <app-navbar (toggleNavBar)="toggleNavBar()" [showNavBar]="showNavBar()" />
+  </header>
 
-<router-outlet />
+  <main
+    class="relative transition-all duration-500 h-[calc(100dvh-64px)]"
+    [ngClass]="{
+      'mt-0 h-[calc(100dvh-64px)]': showNavBar(),
+      'h-dvh': !showNavBar(),
+    }"
+  >
+    <router-outlet />
+  </main>
+</div>

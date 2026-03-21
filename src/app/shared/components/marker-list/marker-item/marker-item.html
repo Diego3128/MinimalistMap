@@ -1,0 +1,52 @@
+@if (marker(); as marker) {
+  <li
+    (click)="onMarkerClick(marker.id)"
+    [ngClass]="{
+      'bg-yellow-300 text-black ': isCurrentPosition(),
+    }"
+    class="p-3 border-2 border-yellow-300 rounded-xl font-bold hover:bg-yellow-300 hover:text-black transition-colors duration-300 cursor-pointer flex justify-between items-center gap-2"
+  >
+    <span
+      [style.backgroundColor]="marker._color"
+      class="block size-5 rounded-full shrink-0 grow-0"
+    ></span>
+
+    @if (isEditingMarker()) {
+      <input
+        #markerNameInput
+        name="marker name"
+        type="text"
+        class="flex-3/5 uppercase border border-black rounded-lg p-1"
+        [value]="marker.name"
+        (keydown.enter)="updateMarkerName(marker.id, markerNameInput.value)"
+      />
+    } @else {
+      <p class="uppercase flex-3/5">{{ marker.name }}</p>
+    }
+
+    <div class="flex justify-end items-center gap-4">
+      <button
+        class="cursor-pointer transition-transform hover:scale-105"
+        (click)="$event.stopPropagation(); onDeleteMarker(marker.id)"
+      >
+        <i class="tiny material-icons">delete</i>
+      </button>
+
+      @if (!isEditingMarker()) {
+        <button
+          class="cursor-pointer transition-transform hover:scale-105"
+          (click)="$event.stopPropagation(); toggleEditingMarker(true)"
+        >
+          <i class="tiny material-icons">edit</i>
+        </button>
+      } @else {
+        <button
+          class="cursor-pointer transition-transform hover:scale-105"
+          (click)="$event.stopPropagation(); toggleEditingMarker(false)"
+        >
+          <i class="tiny material-icons">cancel</i>
+        </button>
+      }
+    </div>
+  </li>
+}
