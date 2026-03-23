@@ -1,0 +1,169 @@
+<div
+  [ngClass]="{
+    'translate-y-full opacity-0': !isCreatingMarker(),
+    'translate-y-4 opacity-100': isCreatingMarker(),
+  }"
+  class="translate-y-full w-full bg-gray-950 text-white px-5 pt-5 pb-14 rounded-t-xl flex flex-col gap-y-3 transition-all duration-500 -z-20"
+>
+  <h3 class="text-center text-yellow-400 text-xl mb-3 font-bold">Save location</h3>
+
+  <form
+    [formGroup]="newMarkerForm"
+    class="flex flex-col gap-4"
+    (submit)="$event.preventDefault(); onSubmit()"
+  >
+    <div class="flex gap-2 justify-between items-center">
+      <label for="name">Name</label>
+      <div>
+        <input
+          autocomplete="off"
+          autocorrect="off"
+          class="border-2 border-yellow-400 rounded-md p-2 text-lg"
+          id="name"
+          type="text"
+          placeholder="Name"
+          formControlName="name"
+        />
+        @if (newMarkerForm.controls.name.touched) {
+          @if (newMarkerForm.controls.name.errors?.['required']) {
+            <app-form-error-message errorMessage="The name is required" />
+          }
+        }
+      </div>
+    </div>
+    <!--  -->
+    <div class="flex gap-2 justify-between">
+      <label for="description">Description</label>
+      <div>
+        <input
+          autocomplete="off"
+          autocorrect="off"
+          class="border-2 border-yellow-400 rounded-md p-2 text-lg"
+          id="description"
+          type="text"
+          placeholder="Description"
+          formControlName="description"
+        />
+        @if (newMarkerForm.controls.description.touched) {
+          @if (newMarkerForm.controls.description.errors?.['required']) {
+            <app-form-error-message errorMessage="The description is required" />
+          }
+        }
+      </div>
+    </div>
+    <!--  -->
+    <div class="flex gap-2 justify-between">
+      <label for="price">Price</label>
+      <div>
+        <input
+          autocomplete="off"
+          autocorrect="off"
+          class="border-2 border-yellow-400 rounded-md p-2 text-lg"
+          id="price"
+          type="number"
+          placeholder="Price"
+          formControlName="price"
+        />
+        @if (newMarkerForm.controls.price.touched) {
+          @if (newMarkerForm.controls.price.errors?.['min']) {
+            <app-form-error-message
+              errorMessage="The price need to be at least {{
+                newMarkerForm.controls.price.errors?.['min']['min']
+              }}"
+            />
+          }
+        }
+      </div>
+    </div>
+    <!--  -->
+    <div class="flex gap-2 justify-between">
+      <label for="tags">Add tag</label>
+      <div>
+        <div class="relative">
+          <input
+            autocomplete="off"
+            autocorrect="off"
+            (blur)="newMarkerForm.controls.tags.markAsTouched()"
+            class="border-2 border-yellow-400 rounded-md p-2 text-lg"
+            id="tags"
+            type="text"
+            placeholder="Tags"
+            #newTag
+          />
+          <div
+            class="absolute right-0 bottom-0 h-full w-10 rounded-tr-md rounded-br-md flex justify-center items-center overflow-hidden"
+          >
+            <button
+              type="button"
+              (click)="addNewTag(newTag.value); newTag.value = ''"
+              class="font-bold h-full w-full cursor-pointer bg-yellow-400 text-black"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+        @if (newMarkerForm.controls.tags.touched) {
+          @if (newMarkerForm.controls.tags.errors?.['required']) {
+            <app-form-error-message errorMessage="Tags are required" />
+          }
+
+          @if (newMarkerForm.controls.tags.errors?.['minlength']) {
+            <app-form-error-message
+              errorMessage="Create at least {{
+                newMarkerForm.controls.tags.errors?.['minlength'].requiredLength
+              }} tags"
+            />
+          }
+        }
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3" formArrayName="tags">
+      @for (tag of newMarkerTags.controls; track $index; let i = $index) {
+        <div class="flex flex-col">
+          <div class="flex justify-center items-center p-1 border-2 border-yellow-400 rounded-md">
+            <input class="w-full border-0 outline-0 text-white" [formControlName]="i" type="text" />
+            <button
+              autocorrect="off"
+              autocomplete="off"
+              (click)="deleteTag(i)"
+              type="button"
+              class="flex items-center justify-center"
+              aria-label="delete"
+            >
+              <i class="material-icons" aria-hidden="true">cancel</i>
+            </button>
+          </div>
+          <!-- errors for this field: -->
+          @if (tag.invalid) {
+            @if (tag.errors?.['required']) {
+              <app-form-error-message errorMessage="This field is required" />
+            }
+            <!--  -->
+            @if (tag.errors?.['maxlength']) {
+              <app-form-error-message
+                errorMessage="Max {{ tag.errors?.['maxlength'].requiredLength }} chars allowed"
+              />
+            }
+          }
+        </div>
+      }
+    </div>
+
+    <button
+      class="my-3 bg-yellow-400 p-3 rounded-xl text-black font-bold cursor-pointer"
+      type="submit"
+    >
+      Create
+    </button>
+
+    @if (newMarkerForm.valid) {
+      <p>Add the marker on the map</p>
+    }
+
+    <!-- <pre class="bg-black text-green-400 p-4">
+  {{ getFormValidationErrors() | json }}
+</pre
+    > -->
+  </form>
+</div>

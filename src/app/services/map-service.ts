@@ -6,10 +6,19 @@ import '@maptiler/sdk/style.css';
 import { UUID } from "../helpers/uuid";
 import { Color } from "../helpers/color";
 
-export type CustomMarker = Marker & {
+export type LocalStorageMarker = {
   id: string;
+  description: string;
   name: string;
+  price: number;
+  tags: string[];
+  // overwrite properties?
+  lng: number;
+  lat: number;
+  color: string;
 }
+
+export type CustomMarker = Marker & LocalStorageMarker;
 
 @Injectable({
   providedIn: 'root'
@@ -50,18 +59,19 @@ export class MapService {
   private addMarkerEvents = (marker: CustomMarker) => {
     marker.on("dragend", (e) => this.updateMarkerPosition(marker, e));
 
-    marker.getElement().addEventListener("mouseenter", (e) => {
-      // console.log({ name: marker.name, e });
-      marker.togglePopup()
-    })
+    marker.getElement().addEventListener("mouseenter", (e) => marker.togglePopup());
   }
 
-  private createCustomMarker = (lng: number, lat: number, name: string, id?: string, color?: string): CustomMarker => {
+  private createCustomMarker = ({ lng, lat, name, id, color }: { lng: number, lat: number, name: string, id?: string, color?: string }): CustomMarker => {
+    // private createCustomMarker = (lng: number, lat: number, name: string, id?: string, color?: string): CustomMarker => {
     const newMarker = new Marker({ color: color ?? Color.getRandomColor(), draggable: true })
       .setLngLat([lng, lat]) as CustomMarker;
 
     newMarker.id = id ?? UUID.generateUUID();
     newMarker.name = name;
+    newMarker.description = "default description"
+    newMarker.price = 200;
+    newMarker.tags = ["home", "lake"];
     this.addMarkerEvents(newMarker);
 
     //todo: popup test
@@ -70,13 +80,15 @@ export class MapService {
     return newMarker;
   }
 
-  getStoredMarkers = () => {
+  getStoredMarkers = (): CustomMarker[] => {
     let markers = JSON.parse(localStorage.getItem(this.MARKERS_KEY) || '[]');
     //todo: validate shape
     if (!Array.isArray(markers)) return []
 
-    console.log({ markers });
-    const customMarkers = (markers).map((m) => {
+    const localMarkers = markers as LocalStorageMarker[];
+
+    console.log({ localMarkers });
+    const customMarkers = (localMarkers).map((m) => {
       const lng = m.lng as number;
       const lat = m.lat as number;
       const id = m.id as string;
@@ -84,7 +96,7 @@ export class MapService {
       const color = m.color as string;
 
       // use createCustomMarker to create marker recovered from localstorage
-      const marker = this.createCustomMarker(lng, lat, name, id, color);
+      const marker = this.createCustomMarker({ lng, lat, name, id, color });
       return marker;
     })
     //the markers are added to the map in the 'load' event
@@ -144,6 +156,8 @@ export class MapService {
 
   createNewCustomMarker = (e: MapMouseEvent) => {
     if (!this.myMap || !this.isCreatingMarker()) return;
+    // todo: this method is only called when clicking a specific part of the map and when 'isCreatingMarker()'
+    // todo: take an object with all the information
 
     if (!this.newMarkerName()) {
       alert("empty name")
@@ -151,7 +165,7 @@ export class MapService {
     }
 
     const { lng, lat } = e.lngLat;
-    const newMarker = this.createCustomMarker(lng, lat, this.newMarkerName());
+    const newMarker = this.createCustomMarker({ lng, lat, name: this.newMarkerName() });
     newMarker.addTo(this.myMap!);
 
     this.markers.update((prev) => [...prev, newMarker as CustomMarker]);
@@ -248,13 +262,15 @@ export class MapService {
     if (!environment.production) console.log("save marker changes to local storage");
     const markers = this.markers();
 
-    const formatedMarkers = markers.map((m) => ({
+    const formatedMarkers: LocalStorageMarker[] = markers.map((m) => ({
       id: m.id, // Keep the ID!
       name: m.name, // Keep the ID!
+      description: m.description ?? 'no description lcstorage',
+      price: m.price ?? 0,
+      tags: ["a", "e"],
       lng: m.getLngLat().lng,
       lat: m.getLngLat().lat,
       color: m._color, // Hardcoded or dynamic
-      draggable: true
     }));
 
     console.log({ formatedMarkers });
@@ -263,7 +279,5 @@ export class MapService {
       window.localStorage.setItem(this.MARKERS_KEY, JSON.stringify(formatedMarkers));
     })
   })
-
-
 
 }

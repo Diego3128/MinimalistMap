@@ -8,10 +8,11 @@ import { MapService } from '../../services/map-service';
 import { Toggle } from '../../shared/components/toggle/toggle';
 import { MarkerList } from "../../shared/components/marker-list/marker-list";
 import { NgClass } from '@angular/common';
+import { NewMarkerForm } from "./new-marker-form/new-marker-form";
 
 @Component({
   selector: 'app-fullscreen-map-page',
-  imports: [CordinateSummary, Loader, Toggle, MarkerList, NgClass],
+  imports: [CordinateSummary, Loader, Toggle, MarkerList, NgClass, NewMarkerForm],
   templateUrl: './fullscreen-map-page.html',
 })
 export class FullscreenMapPage implements AfterViewInit, OnDestroy {
