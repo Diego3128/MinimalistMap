@@ -1,0 +1,160 @@
+<h3 class="text-center text-yellow-400 text-xl mt-2 mb-6 font-bold">Update location</h3>
+
+<form [formGroup]="markerForm" class="flex flex-col gap-4" (submit)="$event.preventDefault()">
+  <div class="flex gap-2 justify-between items-center">
+    <label for="name">Name</label>
+    <div>
+      <input
+        autocomplete="off"
+        autocorrect="off"
+        class="border-2 border-yellow-400 rounded-md p-2 text-lg"
+        id="name"
+        type="text"
+        placeholder="Name"
+        formControlName="name"
+      />
+      @if (markerForm.controls.name.touched) {
+        @if (markerForm.controls.name.errors?.['required']) {
+          <app-form-error-message errorMessage="The name is required" />
+        }
+      }
+    </div>
+  </div>
+  <!--  -->
+  <div class="flex gap-2 justify-between">
+    <label for="description">Description</label>
+    <div>
+      <input
+        autocomplete="off"
+        autocorrect="off"
+        class="border-2 border-yellow-400 rounded-md p-2 text-lg"
+        id="description"
+        type="text"
+        placeholder="Description"
+        formControlName="description"
+      />
+      @if (markerForm.controls.description.touched) {
+        @if (markerForm.controls.description.errors?.['required']) {
+          <app-form-error-message errorMessage="The description is required" />
+        }
+      }
+    </div>
+  </div>
+  <!--  -->
+  <div class="flex gap-2 justify-between">
+    <label for="price">Price</label>
+    <div>
+      <input
+        autocomplete="off"
+        autocorrect="off"
+        class="border-2 border-yellow-400 rounded-md p-2 text-lg"
+        id="price"
+        type="number"
+        placeholder="Price"
+        formControlName="price"
+      />
+      @if (markerForm.controls.price.touched) {
+        @if (markerForm.controls.price.errors?.['min']) {
+          <app-form-error-message
+            errorMessage="The price need to be at least {{
+              markerForm.controls.price.errors?.['min']['min']
+            }}"
+          />
+        }
+      }
+    </div>
+  </div>
+  <!--  -->
+  <div class="flex gap-2 justify-between">
+    <label for="tags">Add tag</label>
+    <div>
+      <div class="relative">
+        <input
+          autocomplete="off"
+          autocorrect="off"
+          (blur)="markerForm.controls.tags.markAsTouched()"
+          (keydown.enter)="newTagBtn.click()"
+          class="border-2 border-yellow-400 rounded-md p-2 text-lg"
+          id="tags"
+          type="text"
+          placeholder="Tags"
+          #newTag
+        />
+        <div
+          class="absolute right-0 bottom-0 h-full w-10 rounded-tr-md rounded-br-md flex justify-center items-center overflow-hidden"
+        >
+          <button
+            #newTagBtn
+            type="button"
+            (click)="addNewTag(newTag.value); newTag.value = ''"
+            class="font-bold h-full w-full cursor-pointer bg-yellow-400 text-black"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+      @if (markerForm.controls.tags.touched) {
+        @if (markerForm.controls.tags.errors?.['required']) {
+          <app-form-error-message errorMessage="Tags are required" />
+        }
+
+        @if (markerForm.controls.tags.errors?.['minlength']) {
+          <app-form-error-message
+            errorMessage="Create at least {{
+              markerForm.controls.tags.errors?.['minlength'].requiredLength
+            }} tags"
+          />
+        }
+      }
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-3" formArrayName="tags">
+    @for (tag of newMarkerTags.controls; track $index; let i = $index) {
+      <div class="flex flex-col">
+        <div class="flex justify-center items-center p-1 border-2 border-yellow-400 rounded-md">
+          <input class="w-full border-0 outline-0 text-white" [formControlName]="i" type="text" />
+          <button
+            autocorrect="off"
+            autocomplete="off"
+            (click)="deleteTag(i)"
+            type="button"
+            class="flex items-center justify-center"
+            aria-label="delete"
+          >
+            <i class="material-icons" aria-hidden="true">cancel</i>
+          </button>
+        </div>
+        <!-- errors for this field: -->
+        @if (tag.invalid) {
+          @if (tag.errors?.['required']) {
+            <app-form-error-message errorMessage="This field is required" />
+          }
+          <!--  -->
+          @if (tag.errors?.['maxlength']) {
+            <app-form-error-message
+              errorMessage="Max {{ tag.errors?.['maxlength'].requiredLength }} chars allowed"
+            />
+          }
+        }
+      </div>
+    }
+  </div>
+
+  @if (markerForm.valid) {
+    <button
+      (click)="onSubmit()"
+      class="flex gap-2 items-center bg-yellow-400 font-bold text-black p-3 text-center rounded-lg text-balance justify-center cursor-pointer"
+    >
+      <i class="material-icons">edit</i>
+      <p>Save</p>
+    </button>
+  } @else {
+    <p class="border-l-4 text-gray-500 font-bold pl-3 text-pretty">Invalid information</p>
+  }
+
+  <!-- <pre class="bg-black text-green-400 p-4">
+  {{ getFormValidationErrors() | json }}
+</pre
+    > -->
+</form>

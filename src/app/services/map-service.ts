@@ -1,6 +1,8 @@
 import { effect, Injectable, signal, untracked } from "@angular/core";
 import { environment } from "../../environments/environment";
 import { config, FullscreenControl, Map, MapMouseEvent, MaptilerProjectionControl, Marker, Popup, ScaleControl } from "@maptiler/sdk";
+
+// @ts-ignore
 import '@maptiler/sdk/style.css';
 
 import { UUID } from "../helpers/uuid";
@@ -62,19 +64,18 @@ export class MapService {
     marker.getElement().addEventListener("mouseenter", (e) => marker.togglePopup());
   }
 
-  private createCustomMarker = ({ lng, lat, name, id, color }: { lng: number, lat: number, name: string, id?: string, color?: string }): CustomMarker => {
-    // private createCustomMarker = (lng: number, lat: number, name: string, id?: string, color?: string): CustomMarker => {
+  private createCustomMarker = ({ lng, lat, name, id, color, description, price, tags }:
+    { lng: number, lat: number, name: string, description: string, price: number, tags: string[], id?: string, color?: string }): CustomMarker => {
     const newMarker = new Marker({ color: color ?? Color.getRandomColor(), draggable: true })
       .setLngLat([lng, lat]) as CustomMarker;
 
     newMarker.id = id ?? UUID.generateUUID();
-    newMarker.name = name;
-    newMarker.description = "default description"
-    newMarker.price = 200;
-    newMarker.tags = ["home", "lake"];
+    newMarker.name = name ?? "default name";
+    newMarker.description = description ?? "default description"
+    newMarker.price = price ?? 0;
+    newMarker.tags = tags ?? ["default", "tags"];
     this.addMarkerEvents(newMarker);
 
-    //todo: popup test
     const popup = this.createCustomPopUp(name);
     newMarker.setPopup(popup);
     return newMarker;
@@ -82,7 +83,7 @@ export class MapService {
 
   getStoredMarkers = (): CustomMarker[] => {
     let markers = JSON.parse(localStorage.getItem(this.MARKERS_KEY) || '[]');
-    //todo: validate shape
+    //TODO: validate shape
     if (!Array.isArray(markers)) return []
 
     const localMarkers = markers as LocalStorageMarker[];
@@ -94,9 +95,12 @@ export class MapService {
       const id = m.id as string;
       const name = m.name as string ?? '';
       const color = m.color as string;
+      const description = m.description as string;
+      const price = m.price as number;
+      const tags = m.tags as string[];
 
       // use createCustomMarker to create marker recovered from localstorage
-      const marker = this.createCustomMarker({ lng, lat, name, id, color });
+      const marker = this.createCustomMarker({ lng, lat, name, id, color, description, price, tags });
       return marker;
     })
     //the markers are added to the map in the 'load' event
@@ -109,10 +113,11 @@ export class MapService {
   zoomValue = signal(this.getInitialZoom());
   coordinates = signal<{ lng: number, lat: number }>(this.getInitialCoordinates());
 
-  // todo: get localstorage markes. Validate objet shape
+  // todo: Validate objet shape
   public markers = signal<CustomMarker[]>(this.getStoredMarkers());
 
   public isCreatingMarker = signal(false); // when true user can create a marker with a click on the map
+
   public showMarkers = signal(true); // TODO: show markers?
 
   constructor() {
@@ -136,7 +141,7 @@ export class MapService {
       })
       //
       this.myMap.on("click", (e) => {
-        this.createNewCustomMarker(e);
+        this.createNewCustomMarkerOnMap(e);
       })
       //
       this.myMap.on("load", () => {
@@ -154,23 +159,26 @@ export class MapService {
 
   newMarkerName = signal("");
 
-  createNewCustomMarker = (e: MapMouseEvent) => {
-    if (!this.myMap || !this.isCreatingMarker()) return;
-    // todo: this method is only called when clicking a specific part of the map and when 'isCreatingMarker()'
-    // todo: take an object with all the information
+  // must be set from new-marker-form
+  newMarkerObject = signal<{ name: string, description: string, price: number, tags: string[] } | null>(null);
 
-    if (!this.newMarkerName()) {
-      alert("empty name")
-      return;
-    }
+  //
+  createNewCustomMarkerOnMap = (e: MapMouseEvent) => {
+    if (!this.myMap || !this.isCreatingMarker() || !this.newMarkerObject()) return;
+    // this method is only called when clicking a specific part of the map and when 'isCreatingMarker()' is true
+
+    console.log("new marker to create:");
+    console.log(this.newMarkerObject());
 
     const { lng, lat } = e.lngLat;
-    const newMarker = this.createCustomMarker({ lng, lat, name: this.newMarkerName() });
+    const { name, description, price, tags } = this.newMarkerObject()!;
+    // todo: update method createCustomMarker so it takes all the necessary information
+    const newMarker = this.createCustomMarker({ lng, lat, name, description, price, tags });
     newMarker.addTo(this.myMap!);
 
     this.markers.update((prev) => [...prev, newMarker as CustomMarker]);
 
-    this.newMarkerName.set(""); // reset signal that holds name
+    this.newMarkerObject.set(null); // reset signal that holds name
     this.isCreatingMarker.set(false); // reset signal that tells if we are creaitng a marker
   }
 
@@ -240,20 +248,36 @@ export class MapService {
     this.markers.update((sMarkers) => sMarkers.filter(m => m.id !== markerId));
   }
 
-  updateMarkerName = (markerId: string, newName: string) => {
-    console.log("updating marker", newName);
+  updateMarker = (newMarkerInfo: { id: string, name: string, description: string, tags: string[], price: number }) => {
+    // console.log("updating marker", newMarkerInfo);
     const markers = this.markers();
-    const markerToBeUpdated = markers.find(m => m.id === markerId);
-    console.log({ markerToBeUpdated });
+    const markerToBeUpdated = markers.find(m => m.id === newMarkerInfo.id);
     if (!markerToBeUpdated || !this.myMap) return;
 
     this.markers.update((prevMarkers => prevMarkers.map((m) => {
-      if (m.id === markerId) m.name = newName;
+      if (m.id === newMarkerInfo.id) {
+        m.name = newMarkerInfo.name,
+          m.description = newMarkerInfo.description,
+          m.tags = newMarkerInfo.tags,
+          m.price = newMarkerInfo.price
+        //sync marker's popup
+        this.updateMarkerPopup(m.id);
+      };
       return m;
     })))
+  }
+  //
+  updateMarkerPopup = (markerId: string) => {
+    const marker = this.markers().find(m => m.id === markerId);
+    if (!marker) return;
+    const popup = marker.getPopup();
+    popup.setText(marker.name);
+  }
 
-    // todo: sycn with marker popup
-    // marker.getPopup()..
+  activateMarkerPopUp = (markerId: string) => {
+    const marker = this.markers().find(m => m.id === markerId);
+    if (!marker) return;
+    marker.togglePopup();
   }
 
   // sync markers with localstorage
@@ -267,7 +291,7 @@ export class MapService {
       name: m.name, // Keep the ID!
       description: m.description ?? 'no description lcstorage',
       price: m.price ?? 0,
-      tags: ["a", "e"],
+      tags: m.tags ?? ["a", "e"],
       lng: m.getLngLat().lng,
       lat: m.getLngLat().lat,
       color: m._color, // Hardcoded or dynamic

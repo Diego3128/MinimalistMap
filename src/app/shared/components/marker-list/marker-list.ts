@@ -1,7 +1,6 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 import { CustomMarker, MapService } from '../../../services/map-service';
-import { NgClass } from '@angular/common';
-import { MarkerItem } from "./marker-item/marker-item";
+import { Marker, MarkerItem } from "./marker-item/marker-item";
 
 @Component({
   selector: 'app-marker-list',
@@ -27,8 +26,11 @@ export class MarkerList {
   }
 
   // uses myMapService to update a certain marker // this method is called for a marker-item component, listening to  the event 'onUpdateMarker'
-  onUpdateMarkerName = (markerId: string, newName: string) => {
-    this.myMapService.updateMarkerName(markerId, newName);
+  onUpdateMarker = (marker: Marker, markerId: string) => {
+    this.myMapService.updateMarker({ ...marker, id: markerId });
   }
 
+  showMarkerPopup = (markerId: string) => {
+    this.myMapService.activateMarkerPopUp(markerId)
+  }
 }

@@ -84,6 +84,7 @@
             autocomplete="off"
             autocorrect="off"
             (blur)="newMarkerForm.controls.tags.markAsTouched()"
+            (keydown.enter)="newTagBtn.click()"
             class="border-2 border-yellow-400 rounded-md p-2 text-lg"
             id="tags"
             type="text"
@@ -94,6 +95,7 @@
             class="absolute right-0 bottom-0 h-full w-10 rounded-tr-md rounded-br-md flex justify-center items-center overflow-hidden"
           >
             <button
+              #newTagBtn
               type="button"
               (click)="addNewTag(newTag.value); newTag.value = ''"
               class="font-bold h-full w-full cursor-pointer bg-yellow-400 text-black"
@@ -150,15 +152,17 @@
       }
     </div>
 
-    <button
-      class="my-3 bg-yellow-400 p-3 rounded-xl text-black font-bold cursor-pointer"
-      type="submit"
-    >
-      Create
-    </button>
-
     @if (newMarkerForm.valid) {
-      <p>Add the marker on the map</p>
+      <div
+        class="flex gap-2 items-center bg-yellow-400 font-bold text-black p-3 text-center rounded-lg text-balance"
+      >
+        <i class="material-icons animate-bounce scale-150">location_on</i>
+        <p>Click somewhere on the map to add the new marker</p>
+      </div>
+    } @else {
+      <p class="border-l-4 text-gray-500 font-bold pl-3 text-pretty">
+        Complete the information to create a new marker
+      </p>
     }
 
     <!-- <pre class="bg-black text-green-400 p-4">

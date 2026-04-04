@@ -1,52 +1,73 @@
-@if (marker(); as marker) {
-  <li
-    (click)="onMarkerClick(marker.id)"
-    [ngClass]="{
-      'bg-yellow-300 text-black ': isCurrentPosition(),
-    }"
-    class="p-3 border-2 border-yellow-300 rounded-xl font-bold hover:bg-yellow-300 hover:text-black transition-colors duration-300 cursor-pointer flex justify-between items-center gap-2"
+@if (isEditingMarker()) {
+  <!-- load reactive form with information -->
+  <app-edit-marker-form [marker]="marker()" (updateMarker)="updateMarker($event)" />
+
+  <button
+    type="button"
+    class="bg-red-500 text-white my-3 w-full flex items-center justify-center p-3 rounded-lg gap-2 font-bold cursor-pointer"
+    (click)="toggleEditingMarker(false)"
   >
-    <span
-      [style.backgroundColor]="marker._color"
-      class="block size-5 rounded-full shrink-0 grow-0"
-    ></span>
+    <i aria-hidden="true" class="tiny material-icons">keyboard_return</i>
+    Discard
+  </button>
 
-    @if (isEditingMarker()) {
-      <input
-        #markerNameInput
-        name="marker name"
-        type="text"
-        class="flex-3/5 uppercase border border-black rounded-lg p-1"
-        [value]="marker.name"
-        (keydown.enter)="updateMarkerName(marker.id, markerNameInput.value)"
-      />
-    } @else {
+  <div class="h-0.5 bg-gray-400 my-6 animate-pulse"></div>
+  <!--  -->
+} @else if (marker(); as marker) {
+  <!--  -->
+  <li (click)="onMarkerClick(marker.id)" class="flex flex-col">
+    <div
+      [ngClass]="{
+        'bg-yellow-300 text-black ': isCurrentPosition(),
+      }"
+      class="px-3 pt-3 pb-5 border-2 border-yellow-300 rounded-xl font-bold hover:bg-yellow-300 hover:text-black transition-colors duration-300 cursor-pointer flex justify-between items-center gap-2"
+    >
+      <span
+        [style.backgroundColor]="marker._color"
+        class="block size-5 rounded-full shrink-0 grow-0"
+      ></span>
+
       <p class="uppercase flex-3/5">{{ marker.name }}</p>
-    }
 
-    <div class="flex justify-end items-center gap-4">
-      <button
-        class="cursor-pointer transition-transform hover:scale-105"
-        (click)="$event.stopPropagation(); onDeleteMarker(marker.id)"
-      >
-        <i class="tiny material-icons">delete</i>
-      </button>
+      <div class="flex justify-end items-center gap-4">
+        <button
+          class="cursor-pointer transition-transform hover:scale-105"
+          (click)="$event.stopPropagation(); onDeleteMarker(marker.id)"
+        >
+          <i class="tiny material-icons">delete</i>
+        </button>
 
-      @if (!isEditingMarker()) {
         <button
           class="cursor-pointer transition-transform hover:scale-105"
           (click)="$event.stopPropagation(); toggleEditingMarker(true)"
         >
           <i class="tiny material-icons">edit</i>
         </button>
-      } @else {
-        <button
-          class="cursor-pointer transition-transform hover:scale-105"
-          (click)="$event.stopPropagation(); toggleEditingMarker(false)"
+      </div>
+    </div>
+    <!-- accordeon -->
+    <div
+      class="rounded-br-lg rounded-bl-lg relative -mt-3 overflow-hidden border-2 border-yellow-300"
+    >
+      <!-- todo: check for open property so we can know when it's been triggered -->
+      <details class="collapse bg-base-100" name="my-accordion-det-1" open>
+        <summary
+          class="collapse-title font-semibold cursor-pointer transition-colors hover:bg-slate-950"
         >
-          <i class="tiny material-icons">cancel</i>
-        </button>
-      }
+          Details
+        </summary>
+        <div class="collapse-content text-sm p-0 py-3 px-3">
+          <p class="uppercase">
+            <span class="text-yellow-400 font-bold">Description: </span> {{ marker.description }}
+          </p>
+          <p><span class="text-yellow-400 font-bold">Price: </span>{{ marker.price }}</p>
+          <ul class="my-4 flex gap-2">
+            @for (tag of marker.tags; track tag) {
+              <li class="px-2 py-1 text-black font-bold bg-yellow-300 rounded-md">{{ tag }}</li>
+            }
+          </ul>
+        </div>
+      </details>
     </div>
   </li>
 }

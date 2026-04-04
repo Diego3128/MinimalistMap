@@ -2,7 +2,8 @@
   <ul class="flex flex-col gap-5">
     @for (marker of markers(); track marker.id) {
       <app-marker-item
-        (markerUpdate)="onUpdateMarkerName($event.markerId, $event.newName)"
+        (markerActive)="showMarkerPopup($event)"
+        (markerUpdate)="onUpdateMarker($event.marker, $event.id)"
         (markerClick)="onMarkerClick($event)"
         (markerDelete)="onDeleteMarker($event)"
         [currentCoordinates]="coordinates()"

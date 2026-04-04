@@ -1,10 +1,18 @@
 import { Component, computed, effect, ElementRef, input, output, signal, viewChild } from '@angular/core';
 import { CustomMarker } from '../../../../services/map-service';
 import { NgClass } from '@angular/common';
+import { EditMarkerForm } from "./edit-marker-form/edit-marker-form";
+
+export interface Marker {
+  description: string;
+  name: string;
+  price: number;
+  tags: string[];
+}
 
 @Component({
   selector: 'app-marker-item',
-  imports: [NgClass],
+  imports: [NgClass, EditMarkerForm],
   templateUrl: './marker-item.html',
 })
 export class MarkerItem {
@@ -13,9 +21,11 @@ export class MarkerItem {
 
   markerClick = output<string>();
 
+  markerActive = output<string>();
+
   markerDelete = output<string>();
 
-  markerUpdate = output<{ markerId: string, newName: string }>();
+  markerUpdate = output<{ marker: Marker, id: string }>();
 
   currentCoordinates = input.required<{ lng: number, lat: number }>();
 
@@ -27,10 +37,10 @@ export class MarkerItem {
     this.isEditingMarker.set(newValue)
   };
 
-  updateMarkerName = (markerId: string, newName: string) => {
-    if (!newName || !newName.trim()) return;
+  updateMarker = (marker: Marker) => {
+    // todo: emit whole marker
+    this.markerUpdate.emit({ marker, id: this.marker().id });
     this.isEditingMarker.set(false)
-    this.markerUpdate.emit({ markerId, newName });
   }
 
   checkInputFocus = effect(() => {
@@ -50,6 +60,10 @@ export class MarkerItem {
     return currentLat === lat && currentLng === lng;
   })
 
+  showMarkerToolTip = effect(() => {
+    const showToolTip = this.isCurrentPosition();
+    if (showToolTip) this.markerActive.emit(this.marker().id)
+  })
 
   onMarkerClick(markerId: string) {
     this.markerClick.emit(markerId);
