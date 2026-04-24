@@ -9,6 +9,7 @@ import { Toggle } from '../../shared/components/toggle/toggle';
 import { MarkerList } from "../../shared/components/marker-list/marker-list";
 import { NgClass } from '@angular/common';
 import { NewMarkerForm } from "./new-marker-form/new-marker-form";
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-fullscreen-map-page',
@@ -17,6 +18,8 @@ import { NewMarkerForm } from "./new-marker-form/new-marker-form";
 })
 export class FullscreenMapPage implements AfterViewInit, OnDestroy {
 
+  route = inject(ActivatedRoute);
+
   myMapService = inject(MapService);
 
   private mapContainerRef = viewChild<ElementRef<HTMLDivElement>>("mapContainer");
@@ -24,9 +27,26 @@ export class FullscreenMapPage implements AfterViewInit, OnDestroy {
   showMarkerList = signal(false);
 
   ngAfterViewInit(): void {
-    // create new map for the general service
-    const initialState = { lng: this.myMapService.coordinates().lng, lat: this.myMapService.coordinates().lat, zoom: this.myMapService.zoomValue() };
 
+    let initalLat = this.myMapService.coordinates().lat;
+    let initalLng = this.myMapService.coordinates().lng;
+
+    this.route.queryParamMap.subscribe({
+      next(params) {
+        const lat = parseFloat(params.get("lat") ?? "");
+        const lng = parseFloat(params.get("lng") ?? "");
+        // replace if they are valid
+        if (lat && lng && (!isNaN(lat) && !isNaN(lng))) {
+          // console.log("replacing for query param values");
+          initalLat = lat;
+          initalLng = lng;
+        }
+      },
+    })
+    // create new map for the general service
+    const initialState = { lng: initalLng, lat: initalLat, zoom: this.myMapService.zoomValue() };
+
+    console.log({ initialState });
     this.myMapService.myMap = new Map({
       container: this.mapContainerRef()!.nativeElement,
       style: MapStyle.STREETS_V4,

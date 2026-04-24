@@ -1,6 +1,6 @@
 import { Component, computed, effect, ElementRef, input, output, signal, viewChild } from '@angular/core';
 import { CustomMarker } from '../../../../services/map-service';
-import { NgClass } from '@angular/common';
+import { DecimalPipe, NgClass } from '@angular/common';
 import { EditMarkerForm } from "./edit-marker-form/edit-marker-form";
 
 export interface Marker {
@@ -12,7 +12,7 @@ export interface Marker {
 
 @Component({
   selector: 'app-marker-item',
-  imports: [NgClass, EditMarkerForm],
+  imports: [NgClass, EditMarkerForm, DecimalPipe],
   templateUrl: './marker-item.html',
 })
 export class MarkerItem {
@@ -38,20 +38,10 @@ export class MarkerItem {
   };
 
   updateMarker = (marker: Marker) => {
-    // todo: emit whole marker
     this.markerUpdate.emit({ marker, id: this.marker().id });
     this.isEditingMarker.set(false)
   }
 
-  checkInputFocus = effect(() => {
-    const isEditing = this.isEditingMarker();
-    const inputElement = this.editInputNameElement()?.nativeElement;
-    if (inputElement) {
-      if (isEditing) {
-        inputElement.focus();
-      } else inputElement.blur();
-    }
-  })
 
   isCurrentPosition = computed(() => {
     const { lng, lat } = this.marker().getLngLat();

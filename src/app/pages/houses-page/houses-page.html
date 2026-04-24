@@ -1,1 +1,8 @@
-<p>houses-page works!</p>,
+<div class="px-4">
+  <app-loader [loading]="loadingUserMarkers()" />
+  <div class="h-[80dvh] overflow-y-scroll flex flex-wrap justify-center gap-8 mt-8 pt-8 pb-16">
+    @for (marker of userStoredMarkers(); track marker.id) {
+      <app-location-card [marker]="marker" />
+    }
+  </div>
+</div>

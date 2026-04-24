@@ -88,7 +88,7 @@ export class MapService {
 
     const localMarkers = markers as LocalStorageMarker[];
 
-    console.log({ localMarkers });
+    //console.log({ localMarkers });
     const customMarkers = (localMarkers).map((m) => {
       const lng = m.lng as number;
       const lat = m.lat as number;
@@ -277,7 +277,12 @@ export class MapService {
   activateMarkerPopUp = (markerId: string) => {
     const marker = this.markers().find(m => m.id === markerId);
     if (!marker) return;
-    marker.togglePopup();
+    // console.log({ marker, markerId });
+    setTimeout(() => {
+      if (!marker.getPopup().isOpen()) {
+        marker.togglePopup()
+      }
+    }, 1000);
   }
 
   // sync markers with localstorage
@@ -297,11 +302,30 @@ export class MapService {
       color: m._color, // Hardcoded or dynamic
     }));
 
-    console.log({ formatedMarkers });
+    //console.log({ formatedMarkers });
 
     untracked(() => {
       window.localStorage.setItem(this.MARKERS_KEY, JSON.stringify(formatedMarkers));
     })
-  })
+  });
+
+  getPlainStoredMarkers = (): LocalStorageMarker[] => {
+    let markers: CustomMarker[] = this.getStoredMarkers();
+
+    const plainMarkers = (markers).map((m) => {
+      return {
+        id: m.id,
+        description: m.description,
+        name: m.name,
+        price: m.price,
+        tags: m.tags,
+        lng: m.getLngLat().lng,
+        lat: m.getLngLat().lat,
+        color: m._color
+      }
+    })
+    //the markers are added to the map in the 'load' event
+    return plainMarkers;
+  }
 
 }

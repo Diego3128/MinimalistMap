@@ -44,3 +44,7 @@ button.maplibregl-popup-close-button:hover {
   @apply scale-105 !bg-slate-950;
 
 }
+
+.custom-shadow {
+  box-shadow: 0px 0px 20px 1px #ffff0073;
+}
