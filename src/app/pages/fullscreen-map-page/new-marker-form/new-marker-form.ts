@@ -14,7 +14,7 @@ interface NewMarker {
 @Component({
   selector: 'app-new-marker-form',
   // imports: [NgClass, ReactiveFormsModule, FormErrorMessage],
-  imports: [NgClass, ReactiveFormsModule, FormErrorMessage, JsonPipe],
+  imports: [NgClass, ReactiveFormsModule, FormErrorMessage],
   templateUrl: './new-marker-form.html',
 })
 export class NewMarkerForm {
