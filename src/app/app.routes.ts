@@ -4,17 +4,17 @@ import { HousesPage } from './pages/houses-page/houses-page';
 
 export const routes: Routes = [
   {
-    path: 'open-map',
+    path: 'simplified-map',
     component: FullscreenMapPage,
-    title: 'Open map'
+    title: 'Simplified Map'
   },
   {
     path: 'locations',
     component: HousesPage,
-    title: 'my markers'
+    title: 'my locations'
   },
   {
     path: '**',
-    redirectTo: 'open-map'
+    redirectTo: 'simplified-map'
   }
 ];
